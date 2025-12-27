@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  basic-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: List files
+        run: ls -la
+
+      - name: Check HTML exists
+        run: |
+          python3 - << 'PY'
+          import glob, sys
+          files = glob.glob("**/*.html", recursive=True)
+          print("HTML files found:", files)
+          sys.exit(0 if files else 1)
+          PY
