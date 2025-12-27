@@ -1,0 +1,20 @@
+trigger:
+- main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- checkout: self
+
+- script: |
+    echo "=== Repo files ==="
+    ls -la
+    echo "=== Find HTML files ==="
+    python3 - << 'PY'
+    import glob, sys
+    files = glob.glob("**/*.html", recursive=True)
+    print("HTML files:", files)
+    sys.exit(0 if files else 1)
+    PY
+  displayName: 'Basic CI checks (HTML exists)'
