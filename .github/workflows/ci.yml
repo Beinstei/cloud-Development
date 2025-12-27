@@ -11,14 +11,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: List files
-        run: ls -la
+      - name: List files (debug)
+        run: |
+          pwd
+          ls -la
+          ls -la ** || true
 
-      - name: Check HTML exists
+      - name: Check HTML exists anywhere
         run: |
           python3 - << 'PY'
           import glob, sys
           files = glob.glob("**/*.html", recursive=True)
           print("HTML files found:", files)
-          sys.exit(0 if files else 1)
+          if not files:
+            print("ERROR: No HTML files found in repository.")
+            sys.exit(1)
           PY
