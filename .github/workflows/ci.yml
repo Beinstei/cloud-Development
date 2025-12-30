@@ -2,28 +2,45 @@ name: CI
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "dev"]
   pull_request:
+    branches: ["main", "dev"]
 
 jobs:
-  basic-checks:
+  build-and-check:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-      - name: List files (debug)
+      - name: Setup Node (for tooling)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Basic project checks
         run: |
-          pwd
+          echo "Repo files:"
           ls -la
-          ls -la ** || true
+          test -f index.html
+          test -f JS/app.js
+          echo "✅ Required files exist"
 
-      - name: Check HTML exists anywhere
+      # OPTIONAL (recommended): Install and run linters if you add package.json
+      - name: Install dependencies (if package.json exists)
         run: |
-          python3 - << 'PY'
-          import glob, sys
-          files = glob.glob("**/*.html", recursive=True)
-          print("HTML files found:", files)
-          if not files:
-            print("ERROR: No HTML files found in repository.")
-            sys.exit(1)
-          PY
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No package.json found — skipping npm ci"
+          fi
+
+      - name: Run lint/tests (if defined)
+        run: |
+          if [ -f package.json ]; then
+            npm test --if-present
+            npm run lint --if-present
+          else
+            echo "No tests/lint configured — CI completed with basic checks"
+          fi
